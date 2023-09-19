@@ -1,26 +1,22 @@
 import { FunctionComponent, useState } from "react";
+import { ArrowDown, Clipboard as ClipboardIcon } from "react-feather";
 import Navigation from "./components/ui/Navigation";
-import Widget from "./components/ui/Widget";
 
-type Param = "a" | "b" | "c" | "d" | "e";
+type Param = "a" | "b";
 type MultiParamVariation = Record<Param, string>;
 
-const parameters: Param[] = ["a", "b", "c", "d", "e"];
+type CmdChainOption = "newline" | "and" | "semicolon" | "backslash";
+
+const parameters: Param[] = ["a", "b"];
 const defaultCommand = "";
 const defaultValues = {
   a: "",
   b: "",
-  c: "",
-  d: "",
-  e: "",
 };
 
 const exampleValues = {
-  a: "Major_Charisma, Major_HomestyleCooking, Major_Fishing, Major_Fabrication, Major_Herbalism, Skill_Fitness",
-  b: "8, 6, 6, 6, 6, 6",
-  c: "",
-  d: "",
-  e: "",
+  a: "Major_Charisma, Major_HomestyleCooking",
+  b: "8, 6",
 };
 const exampleCommand = "stats.set_skill_level {a} {b}";
 
@@ -47,10 +43,32 @@ const getParamVariations = (
   }, []);
 };
 
+type ChainSelectOption = { value: string; label: string };
+
+const cmdChainOptions: Record<CmdChainOption, ChainSelectOption> = {
+  newline: {
+    value: "\n",
+    label: "newline ... \\n ",
+  },
+  and: {
+    value: " && ",
+    label: "and ... && ",
+  },
+  semicolon: {
+    value: "; ",
+    label: "semicolon ... ; ",
+  },
+  backslash: {
+    value: " \\ \n",
+    label: "backslash ... \\ ",
+  },
+};
+
 const App: FunctionComponent = () => {
   const [values, setValues] = useState<Record<Param, string>>(exampleValues);
   const [command, setCommand] = useState(exampleCommand);
   const [scratchpad, setScratchpad] = useState("");
+  const [chainOption, setChainOption] = useState<CmdChainOption>("newline");
 
   const paramVariations = getParamVariations(values);
 
@@ -79,95 +97,132 @@ const App: FunctionComponent = () => {
     setScratchpad("");
   };
 
+  const chainCommands = () => {
+    const commands = getCommands();
+    const joined = commands.join(cmdChainOptions[chainOption].value);
+    setScratchpad(joined);
+  };
+
   return (
-    <div className="bg-slate-50 h-full">
+    <div className="h-full bg-base-200">
       <Navigation />
-      <Widget className="w-max mx-auto text-2xl pt-12">
+      <div className="hero pt-8">
         With this easy, two step process, you too can be lazy!
-      </Widget>
-      <div className="flex gap-4 m-8">
-        <Widget className="bg-white w-2/3">
-          <Widget className="bg-mountbattenPink-700 my-4 flex justify-between">
-            <h2>1. Choose your command</h2>
-            <button
-              className="border-2 border-black bg-transparent text-black hover:text-white hover:border- font-semibold"
-              onClick={clearCommand}
-            >
-              clear
-            </button>
-          </Widget>
-          <Widget>
-            <textarea
-              className="block w-full text-xl h-12"
-              value={command}
-              name={"command"}
-              onChange={(e) => setCommand(e.target.value)}
-            />
-          </Widget>
-          <Widget>
-            {getCommands().map((c, i) => (
-              <div className="flex items-center">
-                <span className="inline-block mr-4 font-bold">{i}</span>
-                <input
-                  className="block w-full select-all bg-mountbattenPink-800 border-0 text-mountbattenPink-400 rounded-r-none h-12"
-                  key={i}
-                  value={c}
-                  readOnly
-                  name={"generated"}
-                  type="text"
+      </div>
+
+      <div className="m-8 flex flex-wrap gap-4 max-w-screen-xl mx-auto">
+        {/* main */}
+        <div className="space-y-4 > * flex-grow flex-shrink-0 min-w-min">
+          {/* one */}
+          <div className="collapse bg-base-100">
+            <input type="checkbox" />
+            <div className="collapse-title">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-1xl">1. Choose your command</h3>
+              </div>
+            </div>
+            <div className="collapse-content p-8 pt-0">
+              <div>
+                <textarea
+                  className="textarea bg-neutral-100 font-mono block w-full text-xl h-12 mb-4"
+                  value={command}
+                  name={"command"}
+                  onChange={(e) => setCommand(e.target.value)}
                 />
-                <button
-                  className="rounded-l-none h-12"
-                  onClick={() => navigator.clipboard.writeText(c)}
-                >
-                  Copy
+              </div>
+              <div>
+                <button className="btn btn-outline" onClick={clearCommand}>
+                  Clear
                 </button>
               </div>
-            ))}
-          </Widget>
-        </Widget>
-        <Widget className="flex bg-white">
-          <div className="w-full">
-            <Widget className="bg-apricot-700 my-4 flex justify-between">
-              <h2>2. Set your variables</h2>
-              <button
-                className="border-2 border-black bg-transparent text-black hover:text-white hover:border- font-semibold"
-                onClick={clearValues}
-              >
-                clear
-              </button>
-            </Widget>
-            {parameters.map((v) => (
-              <div className="flex w-full items-center pr-4" key={v}>
-                <label className="inline-block mr-4 font-bold">{v}</label>
-                <textarea
-                  className="w-full"
-                  value={values[v]}
-                  name={v}
-                  onChange={(e) =>
-                    setValues({ ...values, [v]: e.target.value })
-                  }
-                />
-              </div>
-            ))}
+            </div>
           </div>
-        </Widget>
-        <Widget className="bg-white mx-auto w-2/3">
-          <Widget className="bg-sunset-700 my-4 flex justify-between">
-            <h2>3. Mess around with it</h2>
+          {/* two */}
+          <div className="collapse bg-base-100">
+            <input type="checkbox" />
+            <div className="collapse-title">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-1xl">2. Set your variables</h3>
+              </div>
+            </div>
+            <div className="collapse-content p-8 pt-0">
+              {parameters.map((v) => (
+                <div className="flex w-full items-center pr-4 mb-4" key={v}>
+                  <label className="inline-block mr-4 font-bold">{v}</label>
+                  <textarea
+                    className="textarea bg-neutral-100 w-full font-mono"
+                    value={values[v]}
+                    name={v}
+                    onChange={(e) =>
+                      setValues({ ...values, [v]: e.target.value })
+                    }
+                  />
+                </div>
+              ))}
+              <button className="btn btn-outline" onClick={clearValues}>
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+        {/* preview */}
+        <div className="rounded-2xl bg-base-100 p-4 flex-grow flex-shrink-0 min-w-min">
+          {getCommands().map((c, i) => (
+            <div className="flex items-center mb-4">
+              <span className="inline-block mr-4 font-bold">{i}</span>
+              <input
+                className="input input-bordered w-full rounded-r-none font-mono h-12"
+                key={i}
+                value={c}
+                readOnly
+                name={"generated"}
+                type="text"
+              />
+              <button
+                className="btn btn-neutral btn-xs rounded-l-none h-12"
+                onClick={() => navigator.clipboard.writeText(c)}
+              >
+                <ClipboardIcon size={16} />
+              </button>
+            </div>
+          ))}
+          <button
+            className="btn btn-outline mb-4 mr-2"
+            onClick={() => chainCommands()}
+          >
+            Chain commands <ArrowDown />
+          </button>
+          <select
+            className="select select-bordered max-w-xs"
+            onChange={(e) => setChainOption(e.target.value as CmdChainOption)}
+            value={chainOption}
+          >
+            {Object.entries(cmdChainOptions).map(([key, value]) => (
+              <option key={key} value={key}>
+                {value.label}
+              </option>
+            ))}
+          </select>
+          <hr />
+          <div className="relative mt-4">
+            <textarea
+              className="textarea textarea-bordered font-mono w-full h-fit pb-30"
+              onChange={(e) => setScratchpad(e.target.value)}
+              value={scratchpad}
+            ></textarea>
             <button
-              className="border-2 border-black bg-transparent text-black hover:text-white hover:border- font-semibold"
-              onClick={clearScratchpad}
+              className="btn btn-neutral btn-sm btn-square absolute right-1 top-1"
+              onClick={() => navigator.clipboard.writeText(scratchpad)}
             >
-              clear
+              <ClipboardIcon size={16} />
             </button>
-          </Widget>
-          <textarea
-            className="w-full h-4/6 mx-auto"
-            onChange={(e) => setScratchpad(e.target.value)}
-            value={scratchpad}
-          ></textarea>
-        </Widget>
+          </div>
+          <div>
+            <button className="btn btn-outline" onClick={clearScratchpad}>
+              Clear
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
