@@ -10,41 +10,4 @@
   #root {
     @apply h-full;
   }
-
-  h1 {
-    @apply text-6xl font-bold my-2;
-  }
-
-  h2 {
-    @apply text-3xl font-bold my-2 italic;
-  }
-
-  h3 {
-    @apply text-2xl font-bold my-2;
-  }
-
-  h4 {
-    @apply text-2xl font-bold my-2;
-  }
-
-  p {
-    @apply text-xl my-2;
-  }
-
-  input,
-  textarea {
-    @apply border-2 border-englishViolet rounded-xl px-4 py-2 my-2 font-mono;
-  }
-
-  input {
-    @apply h-12;
-  }
-
-  button {
-    @apply bg-englishViolet text-white px-6 py-3 rounded-xl h-12 flex items-center;
-  }
-
-  button:hover {
-    @apply bg-englishViolet-600 border-englishViolet-600;
-  }
 }
