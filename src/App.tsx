@@ -1,4 +1,4 @@
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent, useRef, useState } from "react";
 import { ArrowDown, Clipboard as ClipboardIcon } from "react-feather";
 import Navigation from "./components/ui/Navigation";
 
@@ -68,7 +68,8 @@ const App: FunctionComponent = () => {
   const [values, setValues] = useState<Record<Param, string>>(exampleValues);
   const [command, setCommand] = useState(exampleCommand);
   const [scratchpad, setScratchpad] = useState("");
-  const [chainOption, setChainOption] = useState<CmdChainOption>("newline");
+
+  const dropdownRef = useRef<HTMLDetailsElement>(null);
 
   const paramVariations = getParamVariations(values);
 
@@ -97,9 +98,9 @@ const App: FunctionComponent = () => {
     setScratchpad("");
   };
 
-  const chainCommands = () => {
+  const chainCommands = (opt: CmdChainOption) => {
     const commands = getCommands();
-    const joined = commands.join(cmdChainOptions[chainOption].value);
+    const joined = commands.join(cmdChainOptions[opt].value);
     setScratchpad(joined);
   };
 
@@ -114,14 +115,14 @@ const App: FunctionComponent = () => {
         {/* main */}
         <div className="space-y-4 > * flex-grow flex-shrink-0 min-w-min">
           {/* one */}
-          <div className="collapse bg-base-100">
+          <div className="collapse collapse-arrow bg-base-100">
             <input type="checkbox" />
             <div className="collapse-title">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-1xl">1. Choose your command</h3>
               </div>
             </div>
-            <div className="collapse-content p-8 pt-0">
+            <div className="collapse-content pt-0">
               <div>
                 <textarea
                   className="textarea bg-neutral-100 font-mono block w-full text-xl h-12 mb-4"
@@ -138,14 +139,14 @@ const App: FunctionComponent = () => {
             </div>
           </div>
           {/* two */}
-          <div className="collapse bg-base-100">
+          <div className="collapse collapse-arrow bg-base-100">
             <input type="checkbox" />
             <div className="collapse-title">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-1xl">2. Set your variables</h3>
               </div>
             </div>
-            <div className="collapse-content p-8 pt-0">
+            <div className="collapse-content pt-0">
               {parameters.map((v) => (
                 <div className="flex w-full items-center pr-4 mb-4" key={v}>
                   <label className="inline-block mr-4 font-bold">{v}</label>
@@ -186,23 +187,24 @@ const App: FunctionComponent = () => {
               </button>
             </div>
           ))}
-          <button
-            className="btn btn-outline mb-4 mr-2"
-            onClick={() => chainCommands()}
-          >
-            Chain commands <ArrowDown />
-          </button>
-          <select
-            className="select select-bordered max-w-xs"
-            onChange={(e) => setChainOption(e.target.value as CmdChainOption)}
-            value={chainOption}
-          >
-            {Object.entries(cmdChainOptions).map(([key, value]) => (
-              <option key={key} value={key}>
-                {value.label}
-              </option>
-            ))}
-          </select>
+          <details className="dropdown" ref={dropdownRef}>
+            <summary className="btn btn-outline mb-4 mr-2">
+              Chain commands <ArrowDown />
+            </summary>
+            <ul className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-52">
+              {Object.entries(cmdChainOptions).map(([key, value]) => (
+                <li
+                  key={key}
+                  onClick={() => {
+                    chainCommands(key as CmdChainOption);
+                    dropdownRef.current?.attributes.removeNamedItem("open");
+                  }}
+                >
+                  <a>{value.label}</a>
+                </li>
+              ))}
+            </ul>
+          </details>
           <hr />
           <div className="relative mt-4">
             <textarea
